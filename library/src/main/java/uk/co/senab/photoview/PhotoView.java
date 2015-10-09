@@ -19,28 +19,54 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.RectF;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.widget.ImageView;
 
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.DataSource;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.controller.BaseControllerListener;
+import com.facebook.drawee.generic.GenericDraweeHierarchy;
+import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.DraweeHolder;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.image.CloseableStaticBitmap;
+import com.facebook.imagepipeline.image.ImageInfo;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+
 import uk.co.senab.photoview.PhotoViewAttacher.OnMatrixChangedListener;
 import uk.co.senab.photoview.PhotoViewAttacher.OnPhotoTapListener;
 import uk.co.senab.photoview.PhotoViewAttacher.OnViewTapListener;
+import uk.co.senab.photoview.utils.CustomProgressbarDrawable;
+import uk.co.senab.photoview.utils.ImageDownloadListener;
 
-public class PhotoView extends ImageView implements IPhotoView {
+public class PhotoView extends ImageView implements IPhotoView, ImageDownloadListener {
 
     private PhotoViewAttacher mAttacher;
 
     private ScaleType mPendingScaleType;
 
+    DraweeHolder<GenericDraweeHierarchy> mDraweeHolder;
+    private CloseableReference<CloseableImage> imageReference = null;
+    private ImageDownloadListener mDownloadListener = null;
+
     public PhotoView(Context context) {
         this(context, null);
+        init();
     }
 
     public PhotoView(Context context, AttributeSet attr) {
         this(context, attr, 0);
+        init();
     }
 
     public PhotoView(Context context, AttributeSet attr, int defStyle) {
@@ -58,6 +84,18 @@ public class PhotoView extends ImageView implements IPhotoView {
             setScaleType(mPendingScaleType);
             mPendingScaleType = null;
         }
+
+        if (mDraweeHolder == null) {
+            GenericDraweeHierarchy hierarchy = new GenericDraweeHierarchyBuilder(getResources())
+                    .setFadeDuration(300)
+                    .setProgressBarImage(new CustomProgressbarDrawable(this))
+                    .build();
+            mDraweeHolder = DraweeHolder.create(hierarchy, getContext());
+        }
+    }
+
+    public void setImageDownloadListener(ImageDownloadListener mDownloadListener) {
+        this.mDownloadListener = mDownloadListener;
     }
 
     /**
@@ -296,12 +334,112 @@ public class PhotoView extends ImageView implements IPhotoView {
     @Override
     protected void onDetachedFromWindow() {
         mAttacher.cleanup();
+        mDraweeHolder.onDetach();
         super.onDetachedFromWindow();
     }
 
     @Override
     protected void onAttachedToWindow() {
         init();
+        mDraweeHolder.onAttach();
         super.onAttachedToWindow();
+    }
+
+    @Override
+    protected boolean verifyDrawable(Drawable dr) {
+        if (dr == mDraweeHolder.getHierarchy().getTopLevelDrawable()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onStartTemporaryDetach() {
+        super.onStartTemporaryDetach();
+        mDraweeHolder.onDetach();
+    }
+
+    @Override
+    public void onFinishTemporaryDetach() {
+        super.onFinishTemporaryDetach();
+        mDraweeHolder.onAttach();
+    }
+
+    public void setImageUri(String url) {
+        ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(url)).build();
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
+        DraweeController controller = Fresco.newDraweeControllerBuilder()
+                .setOldController(mDraweeHolder.getController())
+                .setImageRequest(imageRequest)
+                .setControllerListener(new BaseControllerListener<ImageInfo>() {
+                    @Override
+                    public void onFinalImageSet(String s, @Nullable ImageInfo imageInfo, @Nullable Animatable animatable) {
+                        try {
+                            imageReference = dataSource.getResult();
+                            if (imageReference != null) {
+                                CloseableImage image = imageReference.get();
+                                // do something with the image
+                                if (image != null && image instanceof CloseableStaticBitmap) {
+                                    CloseableStaticBitmap closeableStaticBitmap = (CloseableStaticBitmap) image;
+                                    Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
+                                    if (bitmap != null) {
+                                        setImageBitmap(bitmap);
+                                    }
+                                }
+                            }
+                        } finally {
+                            dataSource.close();
+                            CloseableReference.closeSafely(imageReference);
+                        }
+                    }
+                })
+                .setTapToRetryEnabled(true)
+                .build();
+        mDraweeHolder.setController(controller);
+    }
+
+    public void setImageUri(String uri, int width, int height) {
+        ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(Uri.parse(uri))
+                .setAutoRotateEnabled(true)
+                .setResizeOptions(new ResizeOptions(width, height))
+                .build();
+        ImagePipeline imagePipeline = Fresco.getImagePipeline();
+        final DataSource<CloseableReference<CloseableImage>> dataSource = imagePipeline.fetchDecodedImage(imageRequest, this);
+        DraweeController controller = Fresco.newDraweeControllerBuilder()
+                .setOldController(mDraweeHolder.getController())
+                .setImageRequest(imageRequest)
+                .setControllerListener(new BaseControllerListener<ImageInfo>() {
+                    @Override
+                    public void onFinalImageSet(String s, @Nullable ImageInfo imageInfo, @Nullable Animatable animatable) {
+                        try {
+                            imageReference = dataSource.getResult();
+                            if (imageReference != null) {
+                                CloseableImage image = imageReference.get();
+                                if (image != null && image instanceof CloseableStaticBitmap) {
+                                    CloseableStaticBitmap closeableStaticBitmap = (CloseableStaticBitmap) image;
+                                    Bitmap bitmap = closeableStaticBitmap.getUnderlyingBitmap();
+                                    if (bitmap != null) {
+                                        setImageBitmap(bitmap);
+                                    }
+                                }
+                            }
+                        } finally {
+                            dataSource.close();
+                            CloseableReference.closeSafely(imageReference);
+                        }
+                    }
+                })
+                .setTapToRetryEnabled(true)
+                .build();
+        mDraweeHolder.setController(controller);
+    }
+
+
+    @Override
+    public void onUpdate(int progress) {
+        if (mDownloadListener != null) {
+            mDownloadListener.onUpdate(progress);
+        }
     }
 }

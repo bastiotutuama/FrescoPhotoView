@@ -66,14 +66,14 @@ public interface IPhotoView {
      * Use {@link #getMinimumScale()} instead, this will be removed in future release
      *
      * @return The current minimum scale level. What this value represents depends on the current
-     * {@link android.widget.ImageView.ScaleType}.
+     * {@link ImageView.ScaleType}.
      */
     @Deprecated
     float getMinScale();
 
     /**
      * @return The current minimum scale level. What this value represents depends on the current
-     * {@link android.widget.ImageView.ScaleType}.
+     * {@link ImageView.ScaleType}.
      */
     float getMinimumScale();
 
@@ -81,14 +81,14 @@ public interface IPhotoView {
      * Use {@link #getMediumScale()} instead, this will be removed in future release
      *
      * @return The current middle scale level. What this value represents depends on the current
-     * {@link android.widget.ImageView.ScaleType}.
+     * {@link ImageView.ScaleType}.
      */
     @Deprecated
     float getMidScale();
 
     /**
      * @return The current medium scale level. What this value represents depends on the current
-     * {@link android.widget.ImageView.ScaleType}.
+     * {@link ImageView.ScaleType}.
      */
     float getMediumScale();
 
@@ -96,14 +96,14 @@ public interface IPhotoView {
      * Use {@link #getMaximumScale()} instead, this will be removed in future release
      *
      * @return The current maximum scale level. What this value represents depends on the current
-     * {@link android.widget.ImageView.ScaleType}.
+     * {@link ImageView.ScaleType}.
      */
     @Deprecated
     float getMaxScale();
 
     /**
      * @return The current maximum scale level. What this value represents depends on the current
-     * {@link android.widget.ImageView.ScaleType}.
+     * {@link ImageView.ScaleType}.
      */
     float getMaximumScale();
 
@@ -134,7 +134,7 @@ public interface IPhotoView {
      * release
      * <p>&nbsp;</p>
      * Sets the minimum scale level. What this value represents depends on the current {@link
-     * android.widget.ImageView.ScaleType}.
+     * ImageView.ScaleType}.
      *
      * @param minScale minimum allowed scale
      */
@@ -143,7 +143,7 @@ public interface IPhotoView {
 
     /**
      * Sets the minimum scale level. What this value represents depends on the current {@link
-     * android.widget.ImageView.ScaleType}.
+     * ImageView.ScaleType}.
      *
      * @param minimumScale minimum allowed scale
      */
@@ -154,7 +154,7 @@ public interface IPhotoView {
      * release
      * <p>&nbsp;</p>
      * Sets the middle scale level. What this value represents depends on the current {@link
-     * android.widget.ImageView.ScaleType}.
+     * ImageView.ScaleType}.
      *
      * @param midScale medium scale preset
      */
@@ -173,7 +173,7 @@ public interface IPhotoView {
      * release
      * <p>&nbsp;</p>
      * Sets the maximum scale level. What this value represents depends on the current {@link
-     * android.widget.ImageView.ScaleType}.
+     * ImageView.ScaleType}.
      *
      * @param maxScale maximum allowed scale preset
      */
@@ -182,7 +182,7 @@ public interface IPhotoView {
 
     /**
      * Sets the maximum scale level. What this value represents depends on the current {@link
-     * android.widget.ImageView.ScaleType}.
+     * ImageView.ScaleType}.
      *
      * @param maximumScale maximum allowed scale preset
      */
@@ -285,7 +285,7 @@ public interface IPhotoView {
     /**
      * Controls how the image should be resized or moved to match the size of the ImageView. Any
      * scaling or panning will happen within the confines of this {@link
-     * android.widget.ImageView.ScaleType}.
+     * ImageView.ScaleType}.
      *
      * @param scaleType - The desired scaling mode.
      */

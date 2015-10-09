@@ -47,12 +47,12 @@ public class Compat {
     }
 
     @SuppressWarnings("deprecation")
-    @TargetApi(Build.VERSION_CODES.ECLAIR)
+    @TargetApi(VERSION_CODES.ECLAIR)
     private static int getPointerIndexEclair(int action) {
         return (action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT;
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    @TargetApi(VERSION_CODES.HONEYCOMB)
     private static int getPointerIndexHoneyComb(int action) {
         return (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
     }

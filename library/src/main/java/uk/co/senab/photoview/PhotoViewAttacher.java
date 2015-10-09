@@ -211,9 +211,9 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
 
     /**
      * Clean-up the resources attached to this object. This needs to be called when the ImageView is
-     * no longer used. A good example is from {@link android.view.View#onDetachedFromWindow()} or
+     * no longer used. A good example is from {@link View#onDetachedFromWindow()} or
      * from {@link android.app.Activity#onDestroy()}. This is automatically called if you are using
-     * {@link uk.co.senab.photoview.PhotoView}.
+     * {@link PhotoView}.
      */
     @SuppressWarnings("deprecation")
     public void cleanup() {
@@ -962,7 +962,7 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
         /**
          * Callback for when the scale changes
          *
-         * @param scaleFactor the scale factor (less than 1 for zoom out, greater than 1 for zoom in)
+         * @param scaleFactor the scale factor (<1 for zoom out, >1 for zoom in)
          * @param focusX      focal point X position
          * @param focusY      focal point Y position
          */
